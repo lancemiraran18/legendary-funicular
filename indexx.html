@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f5;
+      margin: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .quiz-container {
+      background-color: #1a1a2e;
+      color: white;
+      width: 600px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      border-radius: 10px;
+      border: 5px solid white;
+    }
+    .progress {
+      height: 20px;
+      background-color: #ccc;
+      overflow: hidden;
+      margin-bottom: 20px;
+      position: relative;
+      border: 2px solid white;
+      
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #8e44ad;
+      width: 100%;
+      transition: width 0.1s linear;
+    }
+    .progress-bar.almost-done {
+      background-color: red;
+    }
+    .question {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    .question-number {
+      margin-bottom: 20px;
+      font-size: 16px;
+      color: #bbb;
+    }
+    .options {
+      list-style-type: none;
+      padding: 0;
+    }
+    .options li {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #34495e;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .options li:hover {
+      background-color: #3b5998;
+    }
+    .options li.correct {
+      background-color: green;
+    }
+    .options li.incorrect {
+      background-color: red;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #8e44ad;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #732d91;
+    }
+    #menu {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    #menu button {
+      width: 200px;
+    }
+    #membersButton {
+      background-color: #3498db;
+    }
+    #membersButton:hover {
+      background-color: #217dbb;
+    }
+    .game-over {
+      display: none;
+      text-align: center;
+    }
+    #members {
+      display: none;
+      background-color: #1a1a2e;
+      color: white;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: left;
+      margin-top: 20px;
+      width: 600px;
+      border: 5px solid white;
+      position: relative;
+      right: 20px;
+    }
+    #members ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #members ul li {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container" id="menu">
+    <h1>Welcome to the Quiz Game</h1>
+    <button onclick="startGame()">Play</button>
+    <button id="membersButton" onclick="toggleMembers()">Members</button>
+  </div>
+
+  <div id="members">
+    <h2>Members</h2>
+    <ul>
+      <li>Alison Balmeo</li>
+      <li>Mary Rose Fugio</li>
+      <li>Daryl Melitante</li>
+      <li>Princess Nicole Frilles</li>
+    </ul>
+  </div>
+
+  <div class="quiz-container" id="quiz" style="display: none;">
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="question-number" id="questionNumber"></div>
+    <div class="question" id="question">Question text</div>
+    <ul class="options" id="options">
+      <!-- Options will be dynamically added here -->
+    </ul>
+    <button id="nextButton" onclick="nextQuestion()" disabled>Next</button>
+  </div>
+
+  <div class="quiz-container game-over" id="gameOver">
+    <h1>Game Over</h1>
+    <p>Your score: <span id="score">0</span></p>
+    <button onclick="playAgain()">Play Again</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "It is the score points that divided a distribution into 100 equal parts.",
+        options: ["Quartiles", "Deciles", "Percentiles", "Grouped data"],
+        correct: 2
+      },
+      {
+        question: "Is a type of data that has not been organized or grouped into specific categories.",
+        options: ["Ungroup data", "Grouped data", "Deciles", "Percentiles"],
+        correct: 0
+      },
+      {
+        question: "Is a type of data that has been organized into specific categories or group.",
+        options: ["Ungroup data", "Grouped data", "Deciles", "Quartiles"],
+        correct: 1
+      },
+      {
+        question: "Are points that divided a distribution into ten equal parts.",
+        options: ["Quartiles", "Deciles", "Percentiles", "Ungroup data"],
+        correct: 1
+      },
+      {
+        question: "Are points that divided a distribution into four equal parts.",
+        options: ["Quartiles", "Deciles", "Percentiles", "Grouped data"],
+        correct: 0
+      },
+      {
+        question: "Refers to the statistical association between two variables.",
+        options: ["Correlation", "Sampling distribution", "Grouped data"],
+        correct: 0
+      },
+      {
+        question: "It is also called Gaussian Distribution.",
+        options: ["Sampling distribution", "Standard normal distribution", "Probability distribution"],
+        correct: 1
+      },
+      {
+        question: "Which is not a property of a normal distribution?",
+        options: ["The mean, mode and median are all equal", "The curve is symmetric at the center", "The total area under the curve is 100"],
+        correct: 2
+      },
+      {
+        question: "What are quartiles and how do they divide a data set?",
+        options: ["Quartile divide a sorted dataset into four parts.", "Forgets a crucial step sorting the data quartiles are based on the sorted order of the data.", "The second quartile is the median of the entire dataset not the average."],
+        correct: 0
+      },
+      {
+        question: "What is the term used to describe data points that are significantly different from others?",
+        options: ["Quartiles", "Outliers", "Deciles", "Mean"],
+        correct: 1
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let timer;
+
+    function startGame() {
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("quiz").style.display = "block";
+      loadQuestion();
+    }
+
+    function toggleMembers() {
+      const members = document.getElementById("members");
+      members.style.display = members.style.display === "none" ? "block" : "none";
+    }
+
+    function loadQuestion() {
+      clearTimeout(timer);
+      const questionElement = document.getElementById("question");
+      const optionsElement = document.getElementById("options");
+      const nextButton = document.getElementById("nextButton");
+      const progressBar = document.getElementById("progressBar");
+      const questionNumber = document.getElementById("questionNumber");
+
+      // Reset UI
+      nextButton.disabled = true;
+      optionsElement.innerHTML = "";
+      progressBar.style.width = "100%";
+      progressBar.classList.remove("almost-done");
+      questionNumber.textContent = Question ${currentQuestion + 1}/${questions.length};
+
+      const current = questions[currentQuestion];
+      questionElement.textContent = current.question;
+
+      current.options.forEach((option, index) => {
+        const li = document.createElement("li");
+        li.textContent = option;
+        li.onclick = () => checkAnswer(index, li);
+        optionsElement.appendChild(li);
+      });
+
+      // Timer countdown
+      let timeLeft = 10;
+      timer = setInterval(() => {
+        timeLeft--;
+        progressBar.style.width = ${(timeLeft / 10) * 100}%;
+        if (timeLeft <= 3) {
+          progressBar.classList.add("almost-done");
+        }
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          showCorrectAnswer();
+        }
+      }, 1000);
+    }
+
+    function checkAnswer(index, li) {
+      clearTimeout(timer);
+      const current = questions[currentQuestion];
+      const optionsElement = document.getElementById("options");
+      const nextButton = document.getElementById("nextButton");
+
+      if (index === current.correct) {
+        li.classList.add("correct");
+        score++;
+      } else {
+        li.classList.add("incorrect");
+        optionsElement.children[current.correct].classList.add("correct");
+      }
+
+      Array.from(optionsElement.children).forEach(option => {
+        option.onclick = null;
+      });
+
+      nextButton.disabled = false;
+    }
+
+    function showCorrectAnswer() {
+      const current = questions[currentQuestion];
+      const optionsElement = document.getElementById("options");
+
+      optionsElement.children[current.correct].classList.add("correct");
+      Array.from(optionsElement.children).forEach(option => {
+        option.onclick = null;
+      });
+
+      document.getElementById("nextButton").disabled = false;
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        loadQuestion();
+      } else {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      document.getElementById("quiz").style.display = "none";
+      document.getElementById("gameOver").style.display = "block";
+      document.getElementById("score").textContent = score;
+    }
+
+    function playAgain() {
+      currentQuestion = 0;
+      score = 0;
+      document.getElementById("gameOver").style.display = "none";
+      document.getElementById("menu").style.display = "block";
+    }
+  </script>
+</body>
+</html>
